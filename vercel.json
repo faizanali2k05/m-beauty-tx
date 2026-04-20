@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build",
+  "framework": "vite",
+  "env": [
+    "SMTP_USER",
+    "SMTP_PASS",
+    "SMTP_SERVICE",
+    "NOTIFICATION_EMAIL"
+  ]
+}
