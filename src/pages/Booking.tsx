@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SERVICES } from '../constants';
 import { 
   Calendar as CalendarIcon, 
@@ -12,7 +13,8 @@ import {
   Loader2,
   Sparkles,
   MapPin,
-  Smartphone
+  Smartphone,
+  PartyPopper
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { format, addDays, getYear, getMonth, getDate, getDaysInMonth } from 'date-fns';
@@ -20,10 +22,13 @@ import { format, addDays, getYear, getMonth, getDate, getDaysInMonth } from 'dat
 type Step = 'service' | 'dateTime' | 'details' | 'summary';
 
 export default function Booking() {
+  const navigate = useNavigate();
   const [step, setStep] = useState<Step>('service');
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [countdown, setCountdown] = useState(4);
   
   // Custom Date Selection State
   const initialDate = addDays(new Date(), 1);
@@ -76,6 +81,8 @@ export default function Booking() {
 
       if (response.ok) {
         setIsSuccess(true);
+        setShowToast(true);
+        setCountdown(4);
       } else {
         const result = await response.json();
         alert('Error: ' + result.error);
@@ -100,37 +107,64 @@ export default function Booking() {
     return getDaysInMonth(new Date(tempDate.year, tempDate.month));
   }, [tempDate.month, tempDate.year]);
 
-  if (isSuccess) {
-    return (
-      <div className="pt-48 pb-20 px-6 min-h-[80vh] flex items-center justify-center">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full text-center space-y-8 bg-neutral-900 p-12 rounded-[3rem] border border-gold-500/20 shadow-2xl"
-        >
-          <div className="w-24 h-24 bg-gold-500 rounded-full flex items-center justify-center mx-auto shadow-[0_0_50px_rgba(212,175,55,0.3)]">
-            <CheckCircle2 size={48} className="text-black" />
-          </div>
-          <div className="space-y-4">
-            <h2 className="text-4xl font-serif font-bold text-white italic">¡Reserva Exitosa!</h2>
-            <p className="text-gray-400">
-              Gracias, <span className="text-gold-400 font-bold">{bookingData.name}</span>. 
-              Hemos recibido tu solicitud para <span className="text-white font-medium">{selectedService?.name}</span>.
-              Mariana Bolívar se pondrá en contacto contigo pronto vía WhatsApp o llamada para confirmar los detalles finales.
-            </p>
-          </div>
-          <button 
-            onClick={() => window.location.href = '/'}
-            className="w-full py-5 bg-gold-500 text-black font-bold uppercase tracking-widest rounded-full hover:bg-gold-400 active:scale-95 transition-all shadow-lg"
-          >
-            Volver al Inicio
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
+  // Auto-redirect countdown after success
+  useEffect(() => {
+    if (!showToast) return;
+    if (countdown <= 0) {
+      navigate('/');
+      return;
+    }
+    const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [showToast, countdown, navigate]);
 
   return (
+    <>
+    {/* ── Success Toast Popup ── */}
+    <AnimatePresence>
+      {showToast && (
+        <motion.div
+          initial={{ opacity: 0, y: 80, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 80, scale: 0.9 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] w-[calc(100%-2rem)] max-w-md"
+        >
+          <div className="relative bg-neutral-900 border border-gold-500/40 rounded-[2rem] px-8 py-6 shadow-[0_20px_60px_rgba(0,0,0,0.6),0_0_40px_rgba(212,175,55,0.15)] overflow-hidden">
+            {/* Progress bar */}
+            <motion.div
+              initial={{ scaleX: 1 }}
+              animate={{ scaleX: 0 }}
+              transition={{ duration: 4, ease: 'linear' }}
+              style={{ originX: 0 }}
+              className="absolute bottom-0 left-0 h-1 w-full bg-gold-500 rounded-full"
+            />
+            <div className="flex items-start gap-5">
+              <div className="w-12 h-12 rounded-2xl bg-gold-500 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+                <PartyPopper size={22} className="text-black" />
+              </div>
+              <div className="flex-grow min-w-0">
+                <p className="text-white font-serif font-bold text-lg italic leading-tight">¡Reserva Confirmada!</p>
+                <p className="text-gray-400 text-sm mt-1 leading-relaxed">
+                  Gracias <span className="text-gold-400 font-semibold">{bookingData.name}</span>. Te contactaremos pronto.
+                </p>
+                <p className="text-gray-600 text-[11px] mt-2 uppercase tracking-widest">
+                  Redirigiendo al inicio en {countdown}s…
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/')}
+                className="shrink-0 text-gray-500 hover:text-white transition-colors p-1"
+                aria-label="Ir al inicio ahora"
+              >
+                <CheckCircle2 size={20} className="text-gold-500" />
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+
     <div className="pt-32 md:pt-48 pb-32 px-4 md:px-6 max-w-7xl mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
         
@@ -640,5 +674,6 @@ export default function Booking() {
         </div>
       </div>
     </div>
+    </>
   );
 }
