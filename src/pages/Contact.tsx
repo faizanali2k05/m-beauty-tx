@@ -3,12 +3,50 @@ import { Phone, Mail, Instagram, MapPin, Send, MessageCircle } from 'lucide-reac
 import { useState, type FormEvent } from 'react';
 
 export default function Contact() {
-  const [formState, setFormState] = useState<'idle' | 'sending' | 'success'>('idle');
+  const [formState, setFormState] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    message: ''
+  });
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.name || !formData.email || !formData.message) {
+      alert('Por favor completa los campos obligatorios');
+      return;
+    }
+
     setFormState('sending');
-    setTimeout(() => setFormState('success'), 1500);
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setFormState('success');
+        setFormData({ name: '', phone: '', email: '', message: '' });
+        setTimeout(() => setFormState('idle'), 3000);
+      } else {
+        const error = await response.json();
+        console.error('Error:', error);
+        setFormState('error');
+        setTimeout(() => setFormState('idle'), 3000);
+      }
+    } catch (error) {
+      console.error('Connection error:', error);
+      setFormState('error');
+      setTimeout(() => setFormState('idle'), 3000);
+    }
   };
 
   return (
@@ -103,6 +141,9 @@ export default function Contact() {
                      <label className="text-[10px] uppercase tracking-widest text-gold-500 font-bold ml-1">Nombre</label>
                      <input 
                        type="text" 
+                       name="name"
+                       value={formData.name}
+                       onChange={handleChange}
                        required
                        placeholder="Tu nombre completo"
                        className="w-full bg-black border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-gray-600 focus:border-gold-500 outline-none transition-all"
@@ -112,7 +153,9 @@ export default function Contact() {
                      <label className="text-[10px] uppercase tracking-widest text-gold-500 font-bold ml-1">Teléfono</label>
                      <input 
                        type="tel" 
-                       required
+                       name="phone"
+                       value={formData.phone}
+                       onChange={handleChange}
                        placeholder="Tu número telefónico"
                        className="w-full bg-black border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-gray-600 focus:border-gold-500 outline-none transition-all"
                      />
@@ -123,6 +166,9 @@ export default function Contact() {
                   <label className="text-[10px] uppercase tracking-widest text-gold-500 font-bold ml-1">Email</label>
                   <input 
                     type="email" 
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     required
                     placeholder="tu@email.com"
                     className="w-full bg-black border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-gray-600 focus:border-gold-500 outline-none transition-all"
@@ -132,7 +178,10 @@ export default function Contact() {
                <div className="space-y-2">
                   <label className="text-[10px] uppercase tracking-widest text-gold-500 font-bold ml-1">Mensaje</label>
                   <textarea 
+                    name="message"
                     rows={4}
+                    value={formData.message}
+                    onChange={handleChange}
                     required
                     placeholder="¿Cómo podemos ayudarte?"
                     className="w-full bg-black border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-gray-600 focus:border-gold-500 outline-none resize-none transition-all"
@@ -147,6 +196,7 @@ export default function Contact() {
                   {formState === 'idle' && <><Send size={18} /> Enviar Mensaje</>}
                   {formState === 'sending' && "Enviando..."}
                   {formState === 'success' && "¡Mensaje Enviado!"}
+                  {formState === 'error' && "Error al enviar"}
                </button>
             </form>
 

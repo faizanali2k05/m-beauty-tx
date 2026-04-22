@@ -39,17 +39,59 @@ export default async function handler(
       replyTo: email,
       subject: `Nuevo Mensaje de Contacto: ${name}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #d4af37; padding: 20px; border-radius: 10px; background-color: #fcfcfc;">
-          <h2 style="color: #d4af37; text-align: center; text-transform: uppercase;">Nuevo Mensaje</h2>
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-          <p><strong>Nombre:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Teléfono:</strong> ${phone || 'No proporcionado'}</p>
-          <p><strong>Mensaje:</strong></p>
-          <p style="white-space: pre-wrap; background: #f5f5f5; padding: 15px; border-radius: 5px;">${message}</p>
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-          <p style="font-size: 12px; color: #888; text-align: center;">M Beauty TX - Dallas, Texas</p>
-        </div>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1a1a1a;">
+          <div style="max-width: 600px; margin: 20px auto; background-color: #2a2a2a; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <!-- Header with Brand -->
+            <div style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); padding: 30px 20px; text-align: center; border-bottom: 2px solid #d4af37;">
+              <h1 style="color: #d4af37; font-size: 28px; margin: 0; font-weight: bold; letter-spacing: 2px;">NUEVO MENSAJE</h1>
+            </div>
+
+            <!-- Main Content -->
+            <div style="padding: 30px 25px; color: #ffffff;">
+              <!-- Details Box -->
+              <div style="background-color: #1a1a1a; border: 1px solid #d4af37; border-radius: 8px; padding: 25px; margin-bottom: 25px;">
+                <p style="margin: 0 0 15px 0; font-size: 14px;">
+                  <span style="color: #d4af37; font-weight: bold;">Nombre:</span>
+                  <span style="color: #ffffff;">${name}</span>
+                </p>
+                <p style="margin: 0 0 15px 0; font-size: 14px;">
+                  <span style="color: #d4af37; font-weight: bold;">Email:</span>
+                  <span style="color: #ffffff;">${email}</span>
+                </p>
+                <p style="margin: 0 0 15px 0; font-size: 14px;">
+                  <span style="color: #d4af37; font-weight: bold;">Teléfono:</span>
+                  <span style="color: #ffffff;">${phone || 'No proporcionado'}</span>
+                </p>
+                <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #444;">
+                  <p style="margin: 0 0 10px 0; font-size: 14px;">
+                    <span style="color: #d4af37; font-weight: bold;">Mensaje:</span>
+                  </p>
+                  <p style="margin: 0; font-size: 13px; color: #d0d0d0; white-space: pre-wrap; font-style: italic;">${message}</p>
+                </div>
+              </div>
+
+              <!-- Action Reminder -->
+              <div style="background-color: rgba(212, 175, 55, 0.1); border-left: 4px solid #d4af37; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                <p style="margin: 0; font-size: 13px; color: #d4af37;">
+                  <strong>📧 Responde a:</strong> ${email}
+                </p>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="background-color: #1a1a1a; border-top: 1px solid #444; padding: 20px; text-align: center; font-size: 12px; color: #888;">
+              <p style="margin: 5px 0;">M Beauty TX</p>
+              <p style="margin: 5px 0; color: #d4af37;">Dallas, Texas</p>
+            </div>
+          </div>
+        </body>
+        </html>
       `,
     };
 
